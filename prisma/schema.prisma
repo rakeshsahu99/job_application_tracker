@@ -6,9 +6,84 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  REJECTED
+  OFFER
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id           String           @id @default(cuid())
+  name         String
+  email        String           @unique
+  password     String
+  resumes      Resume[]
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+}
+
+model Resume {
+  id           String   @id @default(cuid())
+  title        String
+  fileUrl      String
+  parsedSkills String[]
+  version      Int
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  createdAt    DateTime @default(now())
+}
+
+model JobApplication {
+  id           String            @id @default(cuid())
+  company      String
+  role         String
+  location     String?
+  salary       String?
+  status       ApplicationStatus @default(SAVED)
+  jobUrl       String?
+  notes        String?
+
+  userId       String
+  user         User              @relation(fields: [userId], references: [id])
+
+  reminders    Reminder[]
+  interviews   Interview[]
+
+  createdAt    DateTime          @default(now())
+}
+
+model Reminder {
+  id              String           @id @default(cuid())
+  type            String
+  followUpDate    DateTime
+  completed       Boolean          @default(false)
+
+  applicationId   String
+  application     JobApplication   @relation(fields: [applicationId], references: [id])
+
+  createdAt       DateTime         @default(now())
+}
+
+model Interview {
+  id              String           @id @default(cuid())
+  round           String
+  scheduledAt     DateTime
+  notes           String?
+  outcome         String?
+
+  applicationId   String
+  application     JobApplication   @relation(fields: [applicationId], references: [id])
+}
+
+model AutomationTask {
+  id          String   @id @default(cuid())
+  platform    String
+  status      String
+  logs        String?
+  retryCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
 }
