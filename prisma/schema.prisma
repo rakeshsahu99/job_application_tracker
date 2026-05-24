@@ -41,18 +41,19 @@ model JobApplication {
   company      String
   role         String
   location     String?
+  jobUrl       String?
   salary       String?
   status       ApplicationStatus @default(SAVED)
-  jobUrl       String?
   notes        String?
+  
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   userId       String
-  user         User              @relation(fields: [userId], references: [id])
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   reminders    Reminder[]
   interviews   Interview[]
-
-  createdAt    DateTime          @default(now())
 }
 
 model Reminder {
