@@ -25,15 +25,15 @@ model User {
 }
 
 model Resume {
-  id           String   @id @default(cuid())
-  title        String
-  fileUrl      String
-  parsedSkills String[]
-  version      Int
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  id            String   @id @default(cuid())
+  title         String
+  fileUrl       String
+  extractedText String?
+  skills        String[]
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
 }
 
 model JobApplication {
