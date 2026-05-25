@@ -14,6 +14,13 @@ enum ApplicationStatus {
   OFFER
 }
 
+enum AutomationStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id           String           @id @default(cuid())
   name         String
@@ -90,7 +97,7 @@ model Interview {
 model AutomationTask {
   id            String          @id @default(cuid())
   platform      String
-  status        String
+  status        AutomationStatus @default(QUEUED)
   logs          String?
   retryCount    Int             @default(0)
 
@@ -98,6 +105,7 @@ model AutomationTask {
   application   JobApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime        @default(now())
+  completedAt   DateTime?
 }
 
 model ResumeMatch {

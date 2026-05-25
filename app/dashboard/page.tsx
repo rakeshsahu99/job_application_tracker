@@ -12,6 +12,7 @@ import StatsCards from "@/components/dashboard/StatsCards"
 import AnalyticsCharts from "@/components/dashboard/AnalyticsCharts"
 import ApplicationsTable from "@/components/dashboard/ApplicationsTable"
 import KanbanBoard from "@/components/dashboard/KanbanBoard"
+import AutomationLogs from "@/components/dashboard/AutomationLogs"
 
 interface JobApplication {
   id: string
@@ -291,6 +292,11 @@ export default function DashboardPage() {
             onDelete={setDeletingId}
           />
         )}
+        
+        {/* Automation Logs Section */}
+        <section className="mt-8">
+          <AutomationLogs />
+        </section>
       </div>
 
       {/* ================= ADD APPLICATION MODAL ================= */}
