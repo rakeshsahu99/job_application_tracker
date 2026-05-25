@@ -1,0 +1,14 @@
+This is a mock resume for testing purposes.
+
+Skills:
+- JavaScript
+- TypeScript
+- Next.js
+- Playwright
+- Automation
+
+Experience:
+- Developer at Tech Corp
+
+Education:
+- BS Computer Science
