@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma';
 import { matchResumeWithJob } from '@/lib/ai/matcher';
 import { fetchAndParsePdf } from '@/lib/ai/parser';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -27,16 +29,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Resume not found' }, { status: 404 });
     }
 
-    let resumeText = resume.extractedText;
+    let resumeText = resume.parsedText;
 
     // Fallback: If text wasn't extracted during upload, extract it now
     if (!resumeText) {
       try {
-        resumeText = await fetchAndParsePdf(resume.fileUrl);
+        resumeText = await fetchAndParsePdf(resume.resumeUrl);
         // Save it back to the DB for future use
         await prisma.resume.update({
           where: { id: resumeId },
-          data: { extractedText: resumeText }
+          data: { parsedText: resumeText }
         });
       } catch (parseError) {
         return NextResponse.json({ message: 'Failed to extract text from the resume PDF.' }, { status: 500 });

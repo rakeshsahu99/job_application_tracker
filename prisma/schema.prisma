@@ -35,16 +35,17 @@ model User {
 model Resume {
   id            String   @id @default(cuid())
   title         String
-  fileUrl       String
-  extractedText String?
+  resumeUrl     String
+  parsedText    String?
   skills        String[]
+  version       Int      @default(1)
+  
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   matches       ResumeMatch[]
   applications  JobApplication[]
 
-
-  createdAt     DateTime @default(now())
+  uploadedAt    DateTime @default(now())
 }
 
 model JobApplication {

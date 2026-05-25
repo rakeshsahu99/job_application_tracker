@@ -25,7 +25,7 @@ export async function processAutomationTask(taskId: string) {
     // Update status to processing
     await prisma.automationTask.update({
       where: { id: taskId },
-      data: { status: 'PROCESSING' }
+      data: { status: 'RUNNING' }
     });
 
     const jobUrl = task.application.jobUrl;
@@ -69,7 +69,7 @@ export async function processAutomationTask(taskId: string) {
     // 5. Update task status (Wait for user confirmation in a real app, here we just mark as ready for review)
     await prisma.automationTask.update({
       where: { id: taskId },
-      data: { status: 'PENDING_REVIEW', logs: 'Form filled. Waiting for user to submit.' }
+      data: { status: 'COMPLETED', logs: 'Form filled. Waiting for user to submit.' }
     });
 
     // NOTE: In semi-automation, we intentionally do NOT close the browser immediately

@@ -10,10 +10,10 @@ import LogoutButton from "@/components/dashboard/LogoutButton"
 interface Resume {
   id: string
   title: string
-  fileUrl: string
-  extractedText: string | null
+  resumeUrl: string
+  parsedText: string | null
   skills: string[]
-  createdAt: string
+  uploadedAt: string
 }
 
 export default function ResumesPage() {
@@ -250,13 +250,13 @@ export default function ResumesPage() {
                           </div>
                           <div>
                             <h3 className="font-bold text-slate-100 text-lg leading-tight group-hover:text-indigo-400">
-                              <a href={resume.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              <a href={resume.resumeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
                                 {resume.title}
                               </a>
                             </h3>
                             <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                               <Calendar className="w-3.5 h-3.5" />
-                              {new Date(resume.createdAt).toLocaleDateString()}
+                              {new Date(resume.uploadedAt).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
@@ -282,7 +282,7 @@ export default function ResumesPage() {
                     {/* Actions */}
                     <div className="flex sm:flex-col items-center justify-end gap-2 border-t sm:border-t-0 sm:border-l border-slate-800 pt-4 sm:pt-0 sm:pl-4">
                       <a
-                        href={resume.fileUrl}
+                        href={resume.resumeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors w-full text-center border border-slate-700"

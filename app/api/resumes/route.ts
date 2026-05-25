@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const resumes = await prisma.resume.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { uploadedAt: 'desc' }
     })
 
     return NextResponse.json(resumes, { status: 200 })

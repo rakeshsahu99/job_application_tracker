@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db/prisma"
-import { supabaseAdmin } from "@/lib/supabase"
-const pdfParse = require("pdf-parse")
+import { mkdir, writeFile } from "fs/promises"
+import { join } from "path"
+
 import { extractSkillsFromText } from "@/lib/parsers/skillExtractor"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -36,59 +37,51 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File must be smaller than 5MB" }, { status: 400 })
     }
 
-    // Create a unique file name
-    const timestamp = Date.now()
-    const fileExt = file.name.split('.').pop()
-    const uniqueFileName = `${session.user.id}/${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`
-
-    // Ensure the resumes bucket exists (Optional, ideally created manually in dashboard once)
-    // Supabase JS will fail gracefully if bucket exists, but it's better to assume it exists.
-
-    // 1. Convert File to ArrayBuffer, then to Buffer for both Supabase and pdf-parse
+    // 1. Convert File to ArrayBuffer, then to Buffer for fs and pdf-parse
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    // 2. Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from("resumes")
-      .upload(uniqueFileName, buffer, {
-        contentType: file.type,
-        upsert: false,
-      })
-
-    if (uploadError) {
-      console.error("Supabase Upload Error:", uploadError)
-      return NextResponse.json({ error: "Failed to upload file to storage" }, { status: 500 })
+    // 2. Save file locally
+    const timestamp = Date.now()
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${session.user.id}-${timestamp}.${fileExt}`
+    
+    // Ensure public/uploads directory exists
+    const uploadsDir = join(process.cwd(), "public", "uploads")
+    try {
+      await mkdir(uploadsDir, { recursive: true })
+    } catch (e) {
+      // Ignore if directory already exists
     }
 
-    // Retrieve public URL
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from("resumes")
-      .getPublicUrl(uniqueFileName)
+    const filePath = join(uploadsDir, fileName)
+    await writeFile(filePath, buffer)
 
-    const fileUrl = publicUrlData.publicUrl
+    // Public URL for the local file
+    const resumeUrl = `/uploads/${fileName}`
 
     // 3. Extract text using pdf-parse
-    let extractedText = ""
+    let parsedText = ""
     try {
+      const pdfParse = require("pdf-parse")
       const pdfData = await pdfParse(buffer)
-      extractedText = pdfData.text
+      parsedText = pdfData.text
     } catch (parseError) {
       console.error("PDF Parsing Error:", parseError)
-      // Even if parsing fails, we don't necessarily want to fail the whole upload.
-      // But we will log it.
+      // Even if parsing fails, we proceed
     }
 
     // 4. Extract Skills
-    const skills = extractSkillsFromText(extractedText)
+    const skills = extractSkillsFromText(parsedText)
 
     // 5. Save to Database
     const resume = await prisma.resume.create({
       data: {
         title,
-        fileUrl,
-        extractedText,
+        resumeUrl,
+        parsedText,
         skills,
+        version: 1,
         userId: session.user.id,
       },
     })

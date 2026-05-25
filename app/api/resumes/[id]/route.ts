@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db/prisma"
-import { supabaseAdmin } from "@/lib/supabase"
+import { unlink } from "fs/promises"
+import { join } from "path"
 
 export async function DELETE(
   req: NextRequest,
@@ -16,7 +17,7 @@ export async function DELETE(
 
     const { id } = await params
 
-    // 1. Fetch resume from DB to ensure ownership and get fileUrl
+    // 1. Fetch resume from DB to ensure ownership and get resumeUrl
     const resume = await prisma.resume.findUnique({
       where: { id },
     })
@@ -29,20 +30,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    // 2. Extract path from fileUrl to delete from Supabase Storage
-    // Example fileUrl: https://[projectId].supabase.co/storage/v1/object/public/resumes/[userId]/[fileName]
-    // The path needed for remove() is "[userId]/[fileName]"
-    const urlParts = resume.fileUrl.split("/resumes/")
-    if (urlParts.length > 1) {
-      const storagePath = urlParts[1]
+    // 2. Delete the local file
+    if (resume.resumeUrl && resume.resumeUrl.startsWith('/uploads/')) {
+      const fileName = resume.resumeUrl.replace('/uploads/', '')
+      const filePath = join(process.cwd(), "public", "uploads", fileName)
       
-      const { error: storageError } = await supabaseAdmin.storage
-        .from("resumes")
-        .remove([storagePath])
-
-      if (storageError) {
-        console.error("Failed to delete from Supabase Storage:", storageError)
-        // We log the error but still proceed to delete the DB record.
+      try {
+        await unlink(filePath)
+      } catch (fileError) {
+        console.error("Failed to delete local file:", fileError)
+        // Log the error but proceed to delete the DB record
       }
     }
 
