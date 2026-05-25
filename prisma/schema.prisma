@@ -61,6 +61,7 @@ model JobApplication {
 
   reminders    Reminder[]
   interviews   Interview[]
+  automationTasks AutomationTask[]
 }
 
 model Reminder {
@@ -87,13 +88,16 @@ model Interview {
 }
 
 model AutomationTask {
-  id          String   @id @default(cuid())
-  platform    String
-  status      String
-  logs        String?
-  retryCount  Int      @default(0)
+  id            String          @id @default(cuid())
+  platform      String
+  status        String
+  logs          String?
+  retryCount    Int             @default(0)
 
-  createdAt   DateTime @default(now())
+  applicationId String?
+  application   JobApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime        @default(now())
 }
 
 model ResumeMatch {
