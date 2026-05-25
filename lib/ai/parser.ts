@@ -1,3 +1,4 @@
+// @ts-expect-error pdf-parse types are broken
 import pdfParse from 'pdf-parse';
 
 export async function parsePdfBuffer(buffer: Buffer): Promise<string> {

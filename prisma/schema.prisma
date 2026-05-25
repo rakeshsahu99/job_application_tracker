@@ -34,6 +34,8 @@ model Resume {
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   matches       ResumeMatch[]
+  applications  JobApplication[]
+
 
   createdAt     DateTime @default(now())
 }
@@ -53,6 +55,9 @@ model JobApplication {
 
   userId       String
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  resumeId     String?
+  resume       Resume?           @relation(fields: [resumeId], references: [id], onDelete: SetNull)
 
   reminders    Reminder[]
   interviews   Interview[]
