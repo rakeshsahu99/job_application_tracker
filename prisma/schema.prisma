@@ -21,6 +21,7 @@ model User {
   password     String
   resumes      Resume[]
   applications JobApplication[]
+  resumeMatches ResumeMatch[]
   createdAt    DateTime         @default(now())
 }
 
@@ -32,6 +33,7 @@ model Resume {
   skills        String[]
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches       ResumeMatch[]
 
   createdAt     DateTime @default(now())
 }
@@ -87,4 +89,23 @@ model AutomationTask {
   retryCount  Int      @default(0)
 
   createdAt   DateTime @default(now())
+}
+
+model ResumeMatch {
+  id              String   @id @default(cuid())
+  score           Int
+  missingSkills   String[]
+  matchingSkills  String[]
+  suggestions     String
+  summary         String
+  
+  jobDescription  String
+  
+  resumeId        String
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
 }
