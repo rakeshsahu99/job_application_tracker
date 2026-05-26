@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/session';
-import { extractSkillsWithAI } from '@/lib/ai/matcher';
+import { extractSkills } from '@/lib/ai/extraction/skills';
 import { cleanResumeText } from '@/lib/ai/cleaner';
 
 // Simple in-memory rate limiting (for development)
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Resume text is too short to extract skills.' }, { status: 400 });
     }
 
-    const skills = await extractSkillsWithAI(cleanedText);
+    const skills = await extractSkills(cleanedText);
 
     return NextResponse.json({ skills }, { status: 200 });
   } catch (error: unknown) {

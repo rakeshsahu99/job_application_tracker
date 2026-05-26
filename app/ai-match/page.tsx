@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { Loader2, Briefcase, FileText, CheckCircle2, XCircle, ChevronRight, FileSearch } from 'lucide-react';
-import { ResumeMatchResult } from '@/lib/ai/matcher';
+import { calculateJobFit, JobFitMatchResult } from '@/lib/ai/scoring/jobFit';
 
 interface Resume {
   id: string;
@@ -16,7 +16,10 @@ export default function AIMatchPage() {
   const [selectedResumeId, setSelectedResumeId] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<ResumeMatchResult | null>(null);
+  const [result, setResult] = useState<JobFitMatchResult | null>(null);
+  const [interviewPrep, setInterviewPrep] = useState<any>(null);
+  const [improvements, setImprovements] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'match' | 'interview' | 'resume'>('match');
   
   useEffect(() => {
     const fetchResumes = async () => {
@@ -50,11 +53,50 @@ export default function AIMatchPage() {
         jobDescription
       });
       setResult(response.data);
+      setActiveTab('match');
       toast.success('Analysis complete!');
     } catch (error: unknown) {
       const err = error as any;
       console.error('Match error:', err);
       toast.error(err.response?.data?.message || 'Failed to analyze resume. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateInterviewPrep = async () => {
+    if (!selectedResumeId || !jobDescription.trim()) {
+      toast.error('Please select a resume and enter a job description.');
+      return;
+    }
+    setIsLoading(true);
+    setInterviewPrep(null);
+    try {
+      const response = await axios.post('/api/ai/interview-prep', { resumeId: selectedResumeId, jobDescription });
+      setInterviewPrep(response.data);
+      setActiveTab('interview');
+      toast.success('Interview Prep generated!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to generate prep.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateImprovements = async () => {
+    if (!selectedResumeId) {
+      toast.error('Please select a resume.');
+      return;
+    }
+    setIsLoading(true);
+    setImprovements(null);
+    try {
+      const response = await axios.post('/api/ai/recommend', { resumeId: selectedResumeId });
+      setImprovements(response.data);
+      setActiveTab('resume');
+      toast.success('Improvements generated!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to generate improvements.');
     } finally {
       setIsLoading(false);
     }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/session';
 import { prisma } from '@/lib/db/prisma';
-import { matchResumeWithJob } from '@/lib/ai/matcher';
+import { calculateJobFit } from '@/lib/ai/scoring/jobFit';
 import { fetchAndParsePdf } from '@/lib/ai/parser';
 import { cleanResumeText } from '@/lib/ai/cleaner';
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const cleanedJobDescription = cleanResumeText(jobDescription); // Reuse cleaner for JD to normalize spacing
 
     // Call the AI Matcher
-    const matchResult = await matchResumeWithJob(cleanedResumeText, cleanedJobDescription);
+    const matchResult = await calculateJobFit(cleanedResumeText, cleanedJobDescription);
 
     // Save the match result to the database
     const savedMatch = await prisma.resumeMatch.create({

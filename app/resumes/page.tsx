@@ -305,6 +305,7 @@ export default function ResumesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
+                {resumes.map((resume) => (
                   <div key={resume.id} className={`bg-slate-900/60 border ${resume.isDefault ? 'border-amber-500/50' : 'border-slate-800'} rounded-2xl p-5 hover:border-slate-700 transition-colors shadow-lg flex flex-col sm:flex-row gap-5 relative`}>
                     
                     {/* Default Badge */}
