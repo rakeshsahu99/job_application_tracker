@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { format, startOfWeek, startOfMonth, parseISO, subDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, parseISO, subDays, subWeeks } from "date-fns";
 
 export async function getApplicationTimeline(userId: string, days = 30) {
   const startDate = subDays(new Date(), days);
@@ -19,10 +19,9 @@ export async function getApplicationTimeline(userId: string, days = 30) {
     },
   });
 
-  // Group by day for the last 30 days
+  // Group by day for the last X days
   const timelineMap: Record<string, number> = {};
   
-  // Initialize all days with 0 to ensure we don't have gaps in the chart
   for (let i = 0; i <= days; i++) {
     const date = subDays(new Date(), i);
     const formattedDate = format(date, "MMM dd");
@@ -36,8 +35,47 @@ export async function getApplicationTimeline(userId: string, days = 30) {
     }
   });
 
-  // Convert map to array and sort by date chronologically
   return Object.entries(timelineMap)
     .map(([date, count]) => ({ date, applications: count }))
-    .reverse(); // Reverse because we initialized by iterating backwards
+    .reverse();
+}
+
+export async function getApplicationsPerWeek(userId: string, weeks = 12) {
+  const startDate = subWeeks(new Date(), weeks);
+
+  const applications = await prisma.jobApplication.findMany({
+    where: {
+      userId,
+      createdAt: {
+        gte: startDate,
+      },
+    },
+    select: {
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  const timelineMap: Record<string, number> = {};
+  
+  for (let i = 0; i <= weeks; i++) {
+    const date = subWeeks(new Date(), i);
+    const weekStart = startOfWeek(date);
+    const formattedDate = format(weekStart, "MMM dd");
+    timelineMap[formattedDate] = 0;
+  }
+
+  applications.forEach(app => {
+    const weekStart = startOfWeek(new Date(app.createdAt));
+    const formattedDate = format(weekStart, "MMM dd");
+    if (timelineMap[formattedDate] !== undefined) {
+      timelineMap[formattedDate] += 1;
+    }
+  });
+
+  return Object.entries(timelineMap)
+    .map(([week, count]) => ({ week, applications: count }))
+    .reverse();
 }
