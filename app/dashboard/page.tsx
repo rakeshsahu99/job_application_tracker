@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Search, LayoutGrid, List as ListIcon, Plus, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
+import { exportToCSV, exportToPDF } from "@/utils/export"
 
 import LogoutButton from "@/components/dashboard/LogoutButton"
 import ApplicationForm from "@/components/forms/ApplicationForm"
@@ -186,22 +187,52 @@ export default function DashboardPage() {
 
         {/* Filters and Toolbar Controls */}
         <section className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-6 p-4 bg-slate-900/60 backdrop-blur-xl border border-slate-850 rounded-2xl">
-          {/* Magnifying Search Input */}
-          <div className="relative w-full sm:max-w-xs">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-              <Search className="w-4 h-4" />
-            </span>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search company or role..."
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-955/80 border border-slate-850 text-white rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40 transition-all placeholder-slate-600 text-sm"
-            />
+          {/* Magnifying Search & Saved Searches */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                <Search className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search company or role..."
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-955/80 border border-slate-850 text-white rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40 transition-all placeholder-slate-600 text-sm"
+              />
+            </div>
+            
+            <select
+              onChange={(e) => {
+                if (e.target.value === "clear") setSearch("")
+                else setSearch(e.target.value)
+              }}
+              className="px-4 py-2.5 bg-slate-800/50 border border-slate-800 text-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer pr-8 relative"
+            >
+              <option value="clear">Saved Searches...</option>
+              <option value="Software Engineer">Software Engineer Roles</option>
+              <option value="Google">Google Applications</option>
+              <option value="Remote">Remote Jobs</option>
+            </select>
           </div>
 
           {/* Controls toolbar */}
-          <div className="flex w-full sm:w-auto items-center justify-end gap-3">
+          <div className="flex w-full sm:w-auto items-center justify-end gap-3 flex-wrap">
+            <div className="flex gap-2 mr-2">
+              <button
+                onClick={() => exportToCSV(applications)}
+                className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                CSV
+              </button>
+              <button
+                onClick={() => exportToPDF(applications)}
+                className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                PDF
+              </button>
+            </div>
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

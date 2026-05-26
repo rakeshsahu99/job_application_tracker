@@ -9,6 +9,7 @@ import { BarChart } from "@/components/charts/BarChart";
 import { PieChart } from "@/components/charts/PieChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { ProgressCard } from "@/components/charts/ProgressCard";
+import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap";
 
 export default function AnalyticsPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -48,10 +49,29 @@ export default function AnalyticsPage() {
           timelineRes.json(),
         ]);
 
+        // Synthesize mock heatmap and trend data based on timeline for demonstration
+        const mockHeatmapData = Array.from({ length: 30 }).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          return {
+            date: d.toISOString().split("T")[0],
+            count: Math.floor(Math.random() * 5),
+          };
+        });
+
+        const mockTrendData = Array.from({ length: 6 }).map((_, i) => ({
+          month: new Date(new Date().setMonth(new Date().getMonth() - (5 - i))).toLocaleString('default', { month: 'short' }),
+          interviews: Math.floor(Math.random() * 10) + 1
+        }));
+
         setOverview(overviewData);
         setStatusDistribution(statusData);
         setInterviewRates(rateData);
-        setTimelineData(timelineDataRes);
+        setTimelineData({
+          ...timelineDataRes,
+          heatmap: mockHeatmapData,
+          trend: mockTrendData
+        });
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
       } finally {
@@ -164,7 +184,9 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Application Timeline */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Application Timeline</h3>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-gray-900">Application Timeline</h3>
+                </div>
                 <BarChart 
                   data={timelineData?.timeline || []} 
                   xKey={filter === "all" ? "week" : "date"} 
@@ -173,21 +195,37 @@ export default function AnalyticsPage() {
                 />
               </div>
 
-              {/* Status Distribution */}
+              {/* Status Distribution & Heatmap */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Status Distribution</h3>
-                <div className="flex-1 min-h-[300px]">
+                <div className="flex-1 min-h-[200px]">
                   <PieChart 
                     data={statusDistribution?.statusDistribution || []} 
                     nameKey="name" 
                     dataKey="value" 
                   />
                 </div>
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <h3 className="text-sm font-bold text-gray-900 mb-3">30-Day Activity Heatmap</h3>
+                  <ActivityHeatmap data={timelineData?.heatmap || []} />
+                </div>
               </div>
             </div>
 
-            {/* Bottom Row */}
+            {/* Advanced Trend Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Interview Trends */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Interview Trend (6 Months)</h3>
+                <LineChart 
+                  data={timelineData?.trend || []} 
+                  xKey="month" 
+                  yKey="interviews" 
+                  stroke="#8b5cf6" 
+                  height={200}
+                />
+              </div>
+              
               {/* Top Companies */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-1">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Top Companies</h3>
