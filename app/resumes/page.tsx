@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Upload, FileText, Trash2, Loader2, Calendar } from "lucide-react"
+import { Upload, FileText, Trash2, Loader2, Calendar, Star, Tag, Plus } from "lucide-react"
 import toast from "react-hot-toast"
 import LogoutButton from "@/components/dashboard/LogoutButton"
 
@@ -13,6 +13,8 @@ interface Resume {
   resumeUrl: string
   parsedText: string | null
   skills: string[]
+  tags: string[]
+  isDefault: boolean
   uploadedAt: string
 }
 
@@ -24,6 +26,9 @@ export default function ResumesPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  
+  // Tagging states
+  const [tagInputs, setTagInputs] = useState<Record<string, string>>({})
 
   const [uploadTitle, setUploadTitle] = useState("")
   const [uploadFile, setUploadFile] = useState<File | null>(null)
@@ -115,6 +120,68 @@ export default function ResumesPage() {
       toast.error("Failed to delete resume")
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  // Handle Set Default
+  const handleSetDefault = async (id: string) => {
+    // Optimistic update
+    setResumes((prev) => prev.map(r => ({ ...r, isDefault: r.id === id })))
+    
+    try {
+      const res = await fetch(`/api/resumes/${id}/default`, { method: "PATCH" })
+      if (!res.ok) throw new Error("Failed to set default")
+      toast.success("Default resume updated")
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to set default resume")
+      fetchResumes() // Revert
+    }
+  }
+
+  // Handle Add Tag
+  const handleAddTag = async (id: string, currentTags: string[]) => {
+    const newTag = tagInputs[id]?.trim()
+    if (!newTag || currentTags.includes(newTag)) return
+
+    const updatedTags = [...currentTags, newTag]
+    
+    // Optimistic update
+    setResumes(prev => prev.map(r => r.id === id ? { ...r, tags: updatedTags } : r))
+    setTagInputs(prev => ({ ...prev, [id]: "" }))
+
+    try {
+      const res = await fetch(`/api/resumes/${id}/tags`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tags: updatedTags })
+      })
+      if (!res.ok) throw new Error("Failed to update tags")
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to add tag")
+      fetchResumes() // Revert
+    }
+  }
+
+  // Handle Remove Tag
+  const handleRemoveTag = async (id: string, currentTags: string[], tagToRemove: string) => {
+    const updatedTags = currentTags.filter(t => t !== tagToRemove)
+    
+    // Optimistic update
+    setResumes(prev => prev.map(r => r.id === id ? { ...r, tags: updatedTags } : r))
+
+    try {
+      const res = await fetch(`/api/resumes/${id}/tags`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tags: updatedTags })
+      })
+      if (!res.ok) throw new Error("Failed to update tags")
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to remove tag")
+      fetchResumes() // Revert
     }
   }
 
@@ -238,19 +305,25 @@ export default function ResumesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {resumes.map((resume) => (
-                  <div key={resume.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors shadow-lg flex flex-col sm:flex-row gap-5">
+                  <div key={resume.id} className={`bg-slate-900/60 border ${resume.isDefault ? 'border-amber-500/50' : 'border-slate-800'} rounded-2xl p-5 hover:border-slate-700 transition-colors shadow-lg flex flex-col sm:flex-row gap-5 relative`}>
                     
+                    {/* Default Badge */}
+                    {resume.isDefault && (
+                      <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-amber-500 text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-amber-950" /> Default
+                      </div>
+                    )}
+
                     {/* Resume Icon & Details */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                            <FileText className="w-5 h-5 text-indigo-400" />
+                          <div className={`p-2 rounded-lg border ${resume.isDefault ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'}`}>
+                            <FileText className="w-5 h-5" />
                           </div>
                           <div>
-                            <h3 className="font-bold text-slate-100 text-lg leading-tight group-hover:text-indigo-400">
-                              <a href={resume.resumeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <h3 className="font-bold text-slate-100 text-lg leading-tight hover:text-indigo-400 transition-colors">
+                              <a href={resume.resumeUrl} target="_blank" rel="noopener noreferrer">
                                 {resume.title}
                               </a>
                             </h3>
@@ -262,30 +335,73 @@ export default function ResumesPage() {
                         </div>
                       </div>
 
+                      {/* Custom Tags */}
+                      <div className="mt-4 border-t border-slate-800 pt-3">
+                        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <Tag className="w-3 h-3" /> Labels
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {resume.tags?.map(tag => (
+                            <span key={tag} className="px-2 py-0.5 bg-slate-800/80 text-slate-300 text-[11px] font-medium rounded border border-slate-700 flex items-center gap-1">
+                              {tag}
+                              <button onClick={() => handleRemoveTag(resume.id, resume.tags, tag)} className="hover:text-rose-400 ml-0.5">×</button>
+                            </span>
+                          ))}
+                          <form 
+                            onSubmit={(e) => { e.preventDefault(); handleAddTag(resume.id, resume.tags || []); }}
+                            className="flex items-center"
+                          >
+                            <input
+                              type="text"
+                              placeholder="Add label..."
+                              value={tagInputs[resume.id] || ""}
+                              onChange={e => setTagInputs(prev => ({ ...prev, [resume.id]: e.target.value }))}
+                              className="bg-slate-950/50 border border-slate-800 rounded px-2 py-0.5 text-[11px] text-white w-24 focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-600"
+                            />
+                            <button type="submit" className="ml-1 p-0.5 text-slate-500 hover:text-indigo-400 transition-colors">
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+
                       {/* Extracted Skills Tags */}
-                      <div className="mt-4">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Extracted Skills</p>
-                        {resume.skills.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {resume.skills.map(skill => (
-                              <span key={skill} className="px-2 py-1 bg-slate-800 text-slate-300 text-[10px] font-bold rounded-md border border-slate-700">
+                      <div className="mt-4 border-t border-slate-800 pt-3">
+                        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Extracted Skills</p>
+                        {resume.skills && resume.skills.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {resume.skills.slice(0, 8).map(skill => (
+                              <span key={skill} className="px-1.5 py-0.5 bg-slate-950 text-slate-400 text-[10px] font-medium rounded border border-slate-850">
                                 {skill}
                               </span>
                             ))}
+                            {resume.skills.length > 8 && (
+                              <span className="px-1.5 py-0.5 bg-slate-950 text-slate-500 text-[10px] font-medium rounded border border-slate-850">
+                                +{resume.skills.length - 8} more
+                              </span>
+                            )}
                           </div>
                         ) : (
-                          <p className="text-xs text-slate-600 italic">No standard skills detected.</p>
+                          <p className="text-[10px] text-slate-600 italic">No standard skills detected.</p>
                         )}
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex sm:flex-col items-center justify-end gap-2 border-t sm:border-t-0 sm:border-l border-slate-800 pt-4 sm:pt-0 sm:pl-4">
+                    <div className="flex sm:flex-col items-center justify-start sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-slate-800 pt-4 sm:pt-0 sm:pl-4">
+                      {!resume.isDefault && (
+                        <button
+                          onClick={() => handleSetDefault(resume.id)}
+                          className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-[11px] font-semibold rounded-lg transition-colors w-full text-center border border-amber-500/20 flex items-center justify-center gap-1.5"
+                        >
+                          <Star className="w-3 h-3" /> Set Default
+                        </button>
+                      )}
                       <a
                         href={resume.resumeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors w-full text-center border border-slate-700"
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold rounded-lg transition-colors w-full text-center border border-slate-700"
                       >
                         View PDF
                       </a>
