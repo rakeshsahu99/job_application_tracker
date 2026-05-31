@@ -37,3 +37,32 @@ export async function safeUpload(page: Page, selector: string, filePath: string)
   }
   return false;
 }
+
+/**
+ * Types text slowly into a locator to mimic human typing.
+ */
+export async function typeSlowly(locator: any, text: string): Promise<void> {
+  await locator.fill("");
+  await locator.pressSequentially(text, { delay: 50 });
+}
+
+/**
+ * Uploads a resume using standard file input selector.
+ */
+export async function uploadResume(page: Page, selector: string, filePath: string): Promise<void> {
+  await page.setInputFiles(selector, filePath);
+}
+
+/**
+ * Waits for a form to be visible on the page.
+ */
+export async function waitForForm(page: Page, selector: string): Promise<void> {
+  await page.waitForSelector(selector, { state: "visible", timeout: 10000 });
+}
+
+/**
+ * Clicks a locator realistically.
+ */
+export async function clickRealistic(locator: any): Promise<void> {
+  await locator.click();
+}
