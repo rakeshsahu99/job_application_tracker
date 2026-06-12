@@ -138,34 +138,27 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans relative overflow-hidden pb-16">
-      {/* Decorative Blur Background Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-violet-500/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        
-        {/* Navigation & Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-800/80 mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-              Dashboard
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Welcome back, <span className="text-indigo-400 font-semibold">{session?.user?.name}</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsAddOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Track Application</span>
-            </button>
-            <LogoutButton />
-          </div>
-        </header>
+    <>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            Job Tracker
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Accelerate your search and manage active automation tasks.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Track Application</span>
+          </button>
+        </div>
+      </div>
 
         {/* Dashboard Analytics Section */}
         <section className="mb-8">
@@ -328,7 +321,7 @@ export default function DashboardPage() {
         <section className="mt-8">
           <AutomationLogs />
         </section>
-      </div>
+
 
       {/* ================= ADD APPLICATION MODAL ================= */}
       {isAddOpen && (
@@ -403,6 +396,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

@@ -60,12 +60,34 @@ export async function POST(req: NextRequest) {
     // Public URL for the local file
     const resumeUrl = `/uploads/${fileName}`
 
-    // 3. Extract text using pdf-parse
+    // 3. Extract text using pdf-parse (supporting both modern class-based and classic function-based shapes)
     let parsedText = ""
     try {
-      const pdfParse = require("pdf-parse")
-      const pdfData = await pdfParse(buffer)
-      parsedText = pdfData.text
+      const pdfParseModule = require("pdf-parse")
+      
+      // Check for modern class-based library
+      let PDFParseClass = pdfParseModule.PDFParse
+      if (!PDFParseClass && pdfParseModule.default) {
+        PDFParseClass = pdfParseModule.default.PDFParse
+      }
+      
+      if (PDFParseClass) {
+        const parser = new PDFParseClass({ data: buffer })
+        const result = await parser.getText()
+        parsedText = result.text || ""
+      } else {
+        // Fallback to classic function-based
+        let pdfParseFn = pdfParseModule
+        if (pdfParseFn.default) {
+          pdfParseFn = pdfParseFn.default
+        }
+        if (typeof pdfParseFn === "function") {
+          const pdfData = await pdfParseFn(buffer)
+          parsedText = pdfData.text || ""
+        } else {
+          throw new Error("Could not resolve valid PDF parser")
+        }
+      }
     } catch (parseError) {
       console.error("PDF Parsing Error:", parseError)
       // Even if parsing fails, we proceed

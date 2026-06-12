@@ -29,11 +29,11 @@ export default function AnalyticsDashboard() {
   }, [filter]);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
+    <>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Analytics Dashboard</h1>
-          <p className="text-zinc-400 mt-1">Track your job search performance and application metrics.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Analytics</h1>
+          <p className="text-zinc-450 mt-1">Track your search performance and application metrics.</p>
         </div>
 
         <div className="flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-lg p-1">
@@ -71,6 +71,6 @@ export default function AnalyticsDashboard() {
           Failed to load analytics data.
         </div>
       )}
-    </div>
+    </>
   );
 }
