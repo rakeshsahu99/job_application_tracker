@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ message: 'AI configuration error: GROQ_API_KEY is not set in the server environment.' }, { status: 500 });
+    }
+
     // Check Rate Limit
     const now = Date.now();
     let rateLimit = rateLimitMap.get(user.id);
@@ -61,7 +65,8 @@ export async function POST(req: NextRequest) {
           data: { parsedText: resumeText }
         });
       } catch (parseError) {
-        return NextResponse.json({ message: 'Failed to extract text from the resume PDF.' }, { status: 500 });
+        console.error("PDF Parsing Fallback Error:", parseError);
+        return NextResponse.json({ message: 'The original resume file could not be found or read. Please upload a new resume.' }, { status: 400 });
       }
     }
 
@@ -76,14 +81,21 @@ export async function POST(req: NextRequest) {
     // Call the AI Matcher
     const matchResult = await calculateJobFit(cleanedResumeText, cleanedJobDescription);
 
+    // Ensure all fields are correctly typed and formatted
+    const score = parseInt(String(matchResult.score), 10) || 0;
+    const missingSkills = Array.isArray(matchResult.missingSkills) ? matchResult.missingSkills : [];
+    const matchingSkills = Array.isArray(matchResult.matchingSkills) ? matchResult.matchingSkills : [];
+    const suggestions = typeof matchResult.suggestions === 'string' ? matchResult.suggestions : '';
+    const summary = typeof matchResult.summary === 'string' ? matchResult.summary : '';
+
     // Save the match result to the database
     const savedMatch = await prisma.resumeMatch.create({
       data: {
-        score: matchResult.score,
-        missingSkills: matchResult.missingSkills,
-        matchingSkills: matchResult.matchingSkills,
-        suggestions: matchResult.suggestions,
-        summary: matchResult.summary,
+        score,
+        missingSkills,
+        matchingSkills,
+        suggestions,
+        summary,
         jobDescription: jobDescription,
         resumeId: resumeId,
         userId: user.id

@@ -208,39 +208,41 @@ export default function AnalyticsCharts({ applications }: AnalyticsChartsProps) 
             </div>
           ) : (
             <>
-              <ResponsiveContainer width="100%" height="90%" minWidth={0}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={55}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: "#0f172a",
-                      border: "1px solid rgba(51, 65, 85, 0.5)",
-                      borderRadius: "12px",
-                      color: "#f1f5f9",
-                      fontSize: "11px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="w-full h-[180px] relative flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={75}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: "#0f172a",
+                        border: "1px solid rgba(51, 65, 85, 0.5)",
+                        borderRadius: "12px",
+                        color: "#f1f5f9",
+                        fontSize: "11px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
 
-              {/* Total count center label */}
-              <div className="absolute top-[37%] flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-xl font-black text-slate-100">{totalApplications}</span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                  Total
-                </span>
+                {/* Total count center label */}
+                <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl font-black text-slate-100">{totalApplications}</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                    Total
+                  </span>
+                </div>
               </div>
 
               {/* Modern Custom Mini-Legend */}
