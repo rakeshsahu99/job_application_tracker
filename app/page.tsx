@@ -42,7 +42,7 @@ export default function Home() {
                 Sign In
               </Link>
               <Link
-                href="/login?register=true"
+                href="/register"
                 className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] cursor-pointer"
               >
                 Get Started
@@ -79,7 +79,7 @@ export default function Home() {
           ) : (
             <>
               <Link
-                href="/login?register=true"
+                href="/register"
                 className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer text-base"
               >
                 <span>Track Applications Free</span>

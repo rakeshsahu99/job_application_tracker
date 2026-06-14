@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -9,6 +9,13 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const registerParam = searchParams.get("register")
+
+  useEffect(() => {
+    if (registerParam === "true") {
+      router.replace("/register")
+    }
+  }, [registerParam, router])
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
