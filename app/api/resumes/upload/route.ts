@@ -97,9 +97,9 @@ export async function POST(req: NextRequest) {
           throw new Error("Could not resolve valid PDF parser")
         }
       }
-    } catch (parseError) {
+    } catch (parseError: any) {
       console.error("PDF Parsing Error:", parseError)
-      // Even if parsing fails, we proceed
+      return NextResponse.json({ error: `Failed to extract text from PDF: ${parseError.message || parseError}` }, { status: 500 })
     }
 
     // 4. Extract Skills
