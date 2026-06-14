@@ -23,7 +23,7 @@ export function PieChart({ data, nameKey, dataKey, colors = DEFAULT_COLORS, heig
 
   return (
     <div style={{ height }} className="w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <RechartsPieChart>
           <Pie
             data={data}

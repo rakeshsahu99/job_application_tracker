@@ -36,7 +36,7 @@ export function Charts({ statusDistribution, timeline, topCompanies, resumePerfo
       <div className="bg-zinc-900/50 border border-white/5 rounded-xl p-6 backdrop-blur-xl">
         <h3 className="text-lg font-semibold text-white mb-6">Activity Timeline</h3>
         <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
@@ -61,7 +61,7 @@ export function Charts({ statusDistribution, timeline, topCompanies, resumePerfo
         <h3 className="text-lg font-semibold text-white mb-6">Application Pipeline</h3>
         <div className="h-[300px] w-full">
           {statusDistribution.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie
                   data={statusDistribution}
@@ -108,7 +108,7 @@ export function Charts({ statusDistribution, timeline, topCompanies, resumePerfo
         <h3 className="text-lg font-semibold text-white mb-6">Top Companies Applied</h3>
         <div className="h-[300px] w-full">
           {topCompanies.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={topCompanies} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} stroke="#a1a1aa" width={100} />
@@ -132,7 +132,7 @@ export function Charts({ statusDistribution, timeline, topCompanies, resumePerfo
         <h3 className="text-lg font-semibold text-white mb-6">Resume Performance (Interview Rate)</h3>
         <div className="h-[300px] w-full">
           {resumePerformance.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={resumePerformance} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="title" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
