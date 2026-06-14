@@ -2,6 +2,7 @@ import { getBrowser, getContext, saveCookies, closeBrowser } from './browser';
 import { applyToGreenhouse, ApplicationData } from './greenhouse';
 import { applyToLever } from './lever';
 import { prisma } from '../db/prisma'; // Adjust based on your prisma client export location
+import path from 'path';
 
 export async function processAutomationTask(taskId: string) {
   try {
@@ -34,14 +35,17 @@ export async function processAutomationTask(taskId: string) {
     }
 
     // 2. Prepare data for the automation script
-    // In a real scenario, you'd download the resume PDF from task.application.resume.fileUrl to a temp folder.
-    // Here we assume a dummy or existing local path for testing if resume is missing.
+    const resumeUrl = task.application.resume?.resumeUrl;
+    const resumePath = resumeUrl
+      ? path.join(process.cwd(), "public", resumeUrl)
+      : path.join(process.cwd(), "public", "dummy_resume.pdf");
+
     const applicationData: ApplicationData = {
       firstName: task.application.user.name.split(' ')[0] || 'John',
       lastName: task.application.user.name.split(' ').slice(1).join(' ') || 'Doe',
       email: task.application.user.email,
       phone: '123-456-7890', // Hardcoded for demo, you'd add this to User profile
-      resumePath: process.cwd() + '/public/dummy_resume.pdf', // Using a local dummy file for now
+      resumePath,
       linkedIn: 'https://linkedin.com/in/johndoe'
     };
 
