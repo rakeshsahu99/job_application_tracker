@@ -67,6 +67,11 @@ export async function POST(req: NextRequest) {
     // 3. Extract text using pdf-parse (supporting both modern class-based and classic function-based shapes)
     let parsedText = ""
     try {
+      if (typeof global.DOMMatrix === "undefined") {
+        (global as any).DOMMatrix = class DOMMatrix {
+          constructor() {}
+        };
+      }
       const pdfParseModule = require("pdf-parse")
       
       // Check for modern class-based library

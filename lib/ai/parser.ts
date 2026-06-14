@@ -3,6 +3,11 @@ import path from 'path';
 
 export async function parsePdfBuffer(buffer: Buffer): Promise<string> {
   try {
+    if (typeof global.DOMMatrix === "undefined") {
+      (global as any).DOMMatrix = class DOMMatrix {
+        constructor() {}
+      };
+    }
     const pdfParseModule = require('pdf-parse');
     
     // Check if it is the modern class-based library
