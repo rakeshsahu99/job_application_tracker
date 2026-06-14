@@ -1,8 +1,6 @@
 import { Worker, Job } from "bullmq";
 import { redis } from "./redis";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({});
+import { prisma } from "../db/prisma";
 const automationQueueName = "automation-queue";
 
 export const worker = new Worker(
