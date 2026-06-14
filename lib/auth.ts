@@ -15,33 +15,38 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required")
-        }
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email and password are required")
+          }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email.toLowerCase(),
-          },
-        })
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email.toLowerCase(),
+            },
+          })
 
-        if (!user || !user.password) {
-          throw new Error("No user found with this email")
-        }
+          if (!user || !user.password) {
+            throw new Error("No user found with this email")
+          }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
 
-        if (!isPasswordValid) {
-          throw new Error("Incorrect password")
-        }
+          if (!isPasswordValid) {
+            throw new Error("Incorrect password")
+          }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          }
+        } catch (error: any) {
+          console.error("[NextAuth Authorize Error]:", error.message || error)
+          throw error
         }
       },
     }),
@@ -63,5 +68,11 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || (() => {
+    if (process.env.NODE_ENV === "production") {
+      console.warn("⚠️ Warning: NEXTAUTH_SECRET is not defined in the environment variables.")
+    }
+    return undefined
+  })(),
 }
+
