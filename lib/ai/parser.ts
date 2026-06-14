@@ -17,7 +17,7 @@ export async function parsePdfBuffer(buffer: Buffer): Promise<string> {
     }
     
     if (PDFParseClass) {
-      const parser = new PDFParseClass({ data: buffer });
+      const parser = new PDFParseClass({ data: buffer, disableWorker: true });
       const result = await parser.getText();
       return result.text || '';
     }
@@ -29,7 +29,7 @@ export async function parsePdfBuffer(buffer: Buffer): Promise<string> {
     }
     
     if (typeof pdfParseFn === 'function') {
-      const result = await pdfParseFn(buffer);
+      const result = await pdfParseFn(buffer, { disableWorker: true });
       return result.text || '';
     }
     

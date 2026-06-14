@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       }
       
       if (PDFParseClass) {
-        const parser = new PDFParseClass({ data: buffer })
+        const parser = new PDFParseClass({ data: buffer, disableWorker: true })
         const result = await parser.getText()
         parsedText = result.text || ""
       } else {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
           pdfParseFn = pdfParseFn.default
         }
         if (typeof pdfParseFn === "function") {
-          const pdfData = await pdfParseFn(buffer)
+          const pdfData = await pdfParseFn(buffer, { disableWorker: true })
           parsedText = pdfData.text || ""
         } else {
           throw new Error("Could not resolve valid PDF parser")
