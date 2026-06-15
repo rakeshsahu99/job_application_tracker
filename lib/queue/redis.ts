@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Redis } from "ioredis";
 
 // Ensure this only connects once in dev to avoid hitting connection limits
