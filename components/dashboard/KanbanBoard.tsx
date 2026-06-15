@@ -16,6 +16,7 @@ import {
   Trash2,
   ExternalLink,
   GripVertical,
+  Play,
 } from "lucide-react"
 
 interface JobApplication {
@@ -35,6 +36,7 @@ interface KanbanBoardProps {
   onStatusChange: (id: string, newStatus: JobApplication["status"]) => void
   onEdit: (app: JobApplication) => void
   onDelete: (id: string) => void
+  onTriggerAutomation?: (id: string, jobUrl: string) => void
 }
 
 const STATUS_KEYS: Array<JobApplication["status"]> = ["SAVED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED"]
@@ -80,6 +82,7 @@ export default function KanbanBoard({
   onStatusChange,
   onEdit,
   onDelete,
+  onTriggerAutomation,
 }: KanbanBoardProps) {
   const [mounted, setMounted] = useState(false)
 
@@ -150,6 +153,7 @@ export default function KanbanBoard({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onStatusChange={onStatusChange}
+                    onTriggerAutomation={onTriggerAutomation}
                   />
                 ))}
                 {columnApps.length === 0 && (
@@ -205,9 +209,10 @@ interface DraggableCardProps {
   onEdit: (app: JobApplication) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, newStatus: JobApplication["status"]) => void
+  onTriggerAutomation?: (id: string, jobUrl: string) => void
 }
 
-function DraggableCard({ app, colors, onEdit, onDelete, onStatusChange }: DraggableCardProps) {
+function DraggableCard({ app, colors, onEdit, onDelete, onStatusChange, onTriggerAutomation }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: app.id,
   })
@@ -292,6 +297,15 @@ function DraggableCard({ app, colors, onEdit, onDelete, onStatusChange }: Dragga
         </select>
 
         <div className="flex items-center gap-1.5">
+          {app.jobUrl && (
+            <button
+              onClick={() => onTriggerAutomation?.(app.id, app.jobUrl!)}
+              className="text-amber-400 hover:text-amber-300 transition-colors p-1 bg-slate-900/60 hover:bg-slate-800 rounded border border-slate-850 cursor-pointer"
+              title="Run Auto-Apply"
+            >
+              <Play className="w-3 h-3" />
+            </button>
+          )}
           <button
             onClick={() => onEdit(app)}
             className="text-indigo-400 hover:text-indigo-300 transition-colors p-1 bg-slate-900/60 hover:bg-slate-800 rounded border border-slate-850 cursor-pointer"

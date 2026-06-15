@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ExternalLink, Edit3, Trash2, MapPin, DollarSign, Briefcase, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { ExternalLink, Edit3, Trash2, MapPin, DollarSign, Briefcase, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Play } from "lucide-react"
 import {
   useReactTable,
   getCoreRowModel,
@@ -29,6 +29,7 @@ interface ApplicationsTableProps {
   onStatusChange: (id: string, newStatus: JobApplication["status"]) => void
   onEdit: (app: JobApplication) => void
   onDelete: (id: string) => void
+  onTriggerAutomation?: (id: string, jobUrl: string) => void
 }
 
 const STATUS_COLORS: Record<JobApplication["status"], { bg: string; text: string; border: string }> = {
@@ -44,6 +45,7 @@ export default function ApplicationsTable({
   onStatusChange,
   onEdit,
   onDelete,
+  onTriggerAutomation,
 }: ApplicationsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   
@@ -131,15 +133,24 @@ export default function ApplicationsTable({
         return (
           <div className="flex justify-end items-center gap-2">
             {app.jobUrl && (
-              <a
-                href={app.jobUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/60 transition-all active:scale-95"
-                title="Open job link"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
+              <>
+                <button
+                  onClick={() => onTriggerAutomation?.(app.id, app.jobUrl!)}
+                  className="p-2 text-amber-400 hover:text-amber-300 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/60 transition-all active:scale-95 cursor-pointer"
+                  title="Run Auto-Apply Automation"
+                >
+                  <Play className="w-4 h-4" />
+                </button>
+                <a
+                  href={app.jobUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/60 transition-all active:scale-95"
+                  title="Open job link"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </>
             )}
             <button
               onClick={() => onEdit(app)}

@@ -125,6 +125,25 @@ export default function DashboardPage() {
     }
   }
 
+  // Trigger queue-based auto-apply automation
+  const handleTriggerAutomation = async (applicationId: string, jobUrl: string) => {
+    try {
+      const res = await fetch("/api/automation/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId, jobUrl }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to queue automation")
+
+      toast.success("Job automation task successfully queued!")
+    } catch (err: any) {
+      console.error("Failed to run automation:", err)
+      toast.error(err.message || "Failed to trigger automation")
+    }
+  }
+
   if (sessionStatus === "loading") {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -307,6 +326,7 @@ export default function DashboardPage() {
             onStatusChange={handleStatusChange}
             onEdit={setEditingApplication}
             onDelete={setDeletingId}
+            onTriggerAutomation={handleTriggerAutomation}
           />
         ) : (
           <KanbanBoard
@@ -314,6 +334,7 @@ export default function DashboardPage() {
             onStatusChange={handleStatusChange}
             onEdit={setEditingApplication}
             onDelete={setDeletingId}
+            onTriggerAutomation={handleTriggerAutomation}
           />
         )}
         
