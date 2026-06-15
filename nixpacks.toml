@@ -1,0 +1,8 @@
+# Nixpacks configuration for Railway deployments
+# Installs Playwright Chromium browser and its system dependencies
+
+[phases.build]
+cmds = [
+  "npm run build",
+  "npx playwright install chromium --with-deps"
+]
