@@ -1,6 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { redis } from "./redis";
 import { prisma } from "../db/prisma";
+import { processAutomationTask } from "../automation/worker";
 const automationQueueName = "automation-queue";
 
 export const worker = new Worker(
@@ -18,11 +19,16 @@ export const worker = new Worker(
     }
 
     try {
-      // Simulate automation processing based on job type
+      // Route job types to the corresponding automation logic
       if (job.name === "auto-apply") {
         console.log(`[Worker] Auto-applying with data:`, jobData);
-        // Put Playwright logic here
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        if (!taskId) {
+          throw new Error("Cannot run auto-apply without a taskId");
+        }
+        const result = await processAutomationTask(taskId);
+        if (!result.success) {
+          throw new Error(result.error || "Automation failed");
+        }
       } else if (job.name === "follow-up reminder") {
         console.log(`[Worker] Follow-up reminder with data:`, jobData);
         await new Promise((resolve) => setTimeout(resolve, 2000));
